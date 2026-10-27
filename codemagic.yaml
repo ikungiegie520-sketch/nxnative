@@ -1,17 +1,39 @@
+
 workflows:
-  check-mac:
-    name: 检查云Mac编译环境
+  prepare-nxnative:
+    name: 安装nxnative编译环境
     instance_type: mac_mini_m2
-    max_build_duration: 20
+    max_build_duration: 60
+
     scripts:
-      - name: 检查Mac与Xcode
+      - name: 检查源码与Xcode
         script: |
           set -e
-          echo "检查处理器"
           uname -m
-          echo "检查Xcode"
           xcodebuild -version
-          echo "检查Python"
-          python3 --version
-          echo "检查剩余磁盘空间"
-          df -h .
+          test -f scripts/build_ipa_from_nsp.py
+
+      - name: 安装编译工具
+        script: |
+          set -e
+          brew install xcodegen zstd spirv-cross glslang
+          if ! command -v dotnet >/dev/null; then
+            brew install --cask dotnet-sdk
+          fi
+
+      - name: 安装Python依赖
+        script: |
+          set -e
+          python3 -m venv .venv
+          . .venv/bin/activate
+          python3 -m pip install --upgrade pip
+          python3 -m pip install lz4 capstone fonttools "backports.zstd; python_version < '3.14'"
+
+      - name: 检查打包工具
+        script: |
+          set -e
+          . .venv/bin/activate
+          xcodegen --version
+          dotnet --version
+          python3 scripts/build_ipa_from_nsp.py -h
+          echo "nxnative 依赖检查完成"
