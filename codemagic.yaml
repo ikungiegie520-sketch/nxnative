@@ -1,0 +1,17 @@
+workflows:
+  check-mac:
+    name: 检查云Mac编译环境
+    instance_type: mac_mini_m2
+    max_build_duration: 20
+    scripts:
+      - name: 检查Mac与Xcode
+        script: |
+          set -e
+          echo "检查处理器"
+          uname -m
+          echo "检查Xcode"
+          xcodebuild -version
+          echo "检查Python"
+          python3 --version
+          echo "检查剩余磁盘空间"
+          df -h .
